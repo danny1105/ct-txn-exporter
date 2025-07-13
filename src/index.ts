@@ -1,4 +1,4 @@
-import { generateTxnCSV } from "./generate-txn-csv.js"
+import { generateTxnCSV } from "./generate-txn-csv"
 
 const walletAddress = process.argv[2]
 

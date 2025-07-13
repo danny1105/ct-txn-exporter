@@ -1,6 +1,7 @@
 import axios from 'axios' 
 import { createObjectCsvWriter } from 'csv-writer' 
 import dotenv from 'dotenv' 
+import { getCsvFilePath } from './utils'
 
 dotenv.config() 
 
@@ -12,9 +13,11 @@ async function fetchTransactions(address: string) {
   return response.data.result 
 }
 
-async function exportToCSV(transactions: any[]) {
+async function exportToCSV(transactions: any[], walletAddress: string) {
+  const filePath = getCsvFilePath(walletAddress)
+
   const csvWriter = createObjectCsvWriter({
-    path: 'transactions.csv',
+    path: filePath,
     header: [
       { id: 'hash', title: 'Transaction Hash' },
       { id: 'timestamp', title: 'Date & Time' },
@@ -44,5 +47,5 @@ async function exportToCSV(transactions: any[]) {
 
 export async function generateTxnCSV(walletAddress: string): Promise<void> {
   const transactions = await fetchTransactions(walletAddress)
-  await exportToCSV(transactions)
+  await exportToCSV(transactions, walletAddress)
 }
