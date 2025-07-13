@@ -68,7 +68,7 @@ async function exportToCSV(walletAddress: string) {
   const filePath = getCsvFilePath(walletAddress)
 
   const csvWriter = createObjectCsvWriter({
-    path: 'transactions.csv',
+    path: filePath,
     header: [
       { id: 'hash', title: 'Transaction Hash' },
       { id: 'timestamp', title: 'Date & Time' },

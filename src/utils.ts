@@ -21,7 +21,9 @@ export function weiToEth(wei: string, decimals = 18) {
 }
 
 export function timestampToDate(ts: string) {
-  return new Date(Number(ts) * 1000).toISOString() 
+  const ms = Number(ts) * 1000
+  if (!ts || isNaN(ms) || ms <= 0) return ''
+  return new Date(ms).toISOString()
 }
 
 export function gasFeeEth(gasUsed: string, gasPrice: string) {
