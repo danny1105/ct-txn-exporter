@@ -85,16 +85,17 @@ Each row includes:
 
 ## Project Structure
 
+```
 src/
 ├── index.ts               # Entry point CLI script
 ├── generate-txn-csv.ts    # Main export logic
 ├── utils.ts               # Utility functions (formatting, API calls)
 └── types.ts               # Shared types and interfaces
 
-
 csv/
-├── YYYY-MM-DD/            # Timestamped directories
+└── YYYY-MM-DD/
     └── 0xWallet.csv       # Exported CSV file
+```
 
 ---
 
