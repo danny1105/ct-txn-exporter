@@ -10,3 +10,20 @@ export type TxnRecord = {
   value: string 
   gasFee: string 
 }
+
+export type EtherscanTx = {
+  hash: string
+  timeStamp: string
+  from: string
+  to: string
+  value: string
+  gasPrice?: string
+  gasUsed?: string
+  tokenSymbol?: string
+  tokenName?: string
+  contractAddress?: string
+  tokenID?: string
+  isError?: string
+  input?: string
+  [key: string]: unknown // optional, for unknown fields
+}

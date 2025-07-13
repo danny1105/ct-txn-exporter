@@ -1,6 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
+import dotenv from "dotenv"
+import { EtherscanTx } from './types'
+
+dotenv.config()
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 const BASE_URL = 'https://api.etherscan.io/api'
@@ -52,14 +56,38 @@ export function gasFeeEth(gasUsed: string, gasPrice: string) {
 }
 
 export async function fetchEtherscanData(action: string, walletAddress: string) {
-  const response = await axios.get(BASE_URL, {
-    params: {
-      module: 'account',
-      action,
-      address: walletAddress,
-      sort: 'asc',
-      apikey: ETHERSCAN_API_KEY,
-    },
-  })
-  return response.data.result
+  const allResults: EtherscanTx[] = []
+  let startBlock = 0
+  let keepFetching = true
+
+  while (keepFetching) {
+    const response = await axios.get(BASE_URL, {
+      params: {
+        module: 'account',
+        action,
+        address: walletAddress,
+        sort: 'asc',
+        startblock: startBlock,
+        apikey: ETHERSCAN_API_KEY,
+      },
+    })
+
+    const result = response.data.result || []
+
+    if (result.length === 0) {
+      keepFetching = false
+    } else {
+      allResults.push(...result);
+
+      // Prevent infinite loop by checking last block number
+      const lastBlock = parseInt(result[result.length - 1].blockNumber, 10)
+      if (isNaN(lastBlock) || result.length < 10000) {
+        keepFetching = false
+      } else {
+        startBlock = lastBlock + 1
+      }
+    }
+  }
+
+  return allResults
 }

@@ -9,6 +9,7 @@ if (!walletAddress) {
 
 (async () => {
   try {
+    console.log("Wallet address", walletAddress)
     await generateTxnCSV(walletAddress)
     console.log("CSV generation complete.")
   } catch (error) {

@@ -1,5 +1,4 @@
 import { createObjectCsvWriter } from "csv-writer"
-import dotenv from "dotenv"
 import {
   getCsvFilePath,
   weiToEth,
@@ -9,14 +8,13 @@ import {
 } from "./utils"
 import { TxnRecord } from "./types"
 
-dotenv.config()
-
 const allTxs: TxnRecord[] = []
 
 async function fetchTransactions(walletAddress: string) {
   const ethTxs = await fetchEtherscanData("txlist", walletAddress)
   const erc20Txs = await fetchEtherscanData("tokentx", walletAddress)
   const nftTxs = await fetchEtherscanData("tokennfttx", walletAddress)
+  const internalTxs = await fetchEtherscanData("txlistinternal", walletAddress)
 
   for (const tx of ethTxs) {
     allTxs.push({
@@ -24,12 +22,12 @@ async function fetchTransactions(walletAddress: string) {
       timestamp: timestampToDate(tx.timeStamp),
       from: tx.from,
       to: tx.to,
-      type: tx.input !== '0x' ? 'Contract Interaction' : 'ETH Transfer',
-      contractAddress: '',
-      symbol: 'ETH',
-      tokenId: '',
+      type: tx.input !== "0x" ? "Contract Interaction" : "ETH Transfer",
+      contractAddress: "",
+      symbol: "ETH",
+      tokenId: "",
       value: weiToEth(tx.value),
-      gasFee: gasFeeEth(tx.gasUsed, tx.gasPrice),
+      gasFee: gasFeeEth(tx.gasUsed ?? "", tx.gasPrice ?? ""),
     })
   }
 
@@ -39,12 +37,15 @@ async function fetchTransactions(walletAddress: string) {
       timestamp: timestampToDate(tx.timeStamp),
       from: tx.from,
       to: tx.to,
-      type: 'ERC-20 Transfer',
-      contractAddress: tx.contractAddress,
-      symbol: tx.tokenSymbol,
-      tokenId: '',
-      value: weiToEth(tx.value, parseInt(tx.tokenDecimal)),
-      gasFee: '',
+      type: "ERC-20 Transfer",
+      contractAddress: tx.contractAddress ?? "",
+      symbol: tx.tokenSymbol ?? "",
+      tokenId: "",
+      value: weiToEth(
+        tx.value,
+        typeof tx.tokenDecimal === "string" ? parseInt(tx.tokenDecimal) : 18
+      ),
+      gasFee: "",
     })
   }
 
@@ -54,12 +55,27 @@ async function fetchTransactions(walletAddress: string) {
       timestamp: timestampToDate(tx.timeStamp),
       from: tx.from,
       to: tx.to,
-      type: 'ERC-721/1155 Transfer',
-      contractAddress: tx.contractAddress,
-      symbol: tx.tokenName,
-      tokenId: tx.tokenID,
-      value: '1',
-      gasFee: '',
+      type: "ERC-721/1155 Transfer",
+      contractAddress: tx.contractAddress ?? "",
+      symbol: tx.tokenName ?? "",
+      tokenId: tx.tokenID ?? "",
+      value: "1",
+      gasFee: "",
+    })
+  }
+
+  for (const itx of internalTxs) {
+    allTxs.push({
+      hash: itx.hash,
+      timestamp: timestampToDate(itx.timeStamp),
+      from: itx.from,
+      to: itx.to,
+      type: "Internal Transfer",
+      contractAddress: "", // no token
+      symbol: "ETH",
+      tokenId: "",
+      value: weiToEth(itx.value),
+      gasFee: "", // N/A for internal transfers
     })
   }
 }
@@ -70,16 +86,16 @@ async function exportToCSV(walletAddress: string) {
   const csvWriter = createObjectCsvWriter({
     path: filePath,
     header: [
-      { id: 'hash', title: 'Transaction Hash' },
-      { id: 'timestamp', title: 'Date & Time' },
-      { id: 'from', title: 'From Address' },
-      { id: 'to', title: 'To Address' },
-      { id: 'type', title: 'Transaction Type' },
-      { id: 'contractAddress', title: 'Asset Contract Address' },
-      { id: 'symbol', title: 'Asset Symbol / Name' },
-      { id: 'tokenId', title: 'Token ID' },
-      { id: 'value', title: 'Value / Amount' },
-      { id: 'gasFee', title: 'Gas Fee (ETH)' },
+      { id: "hash", title: "Transaction Hash" },
+      { id: "timestamp", title: "Date & Time" },
+      { id: "from", title: "From Address" },
+      { id: "to", title: "To Address" },
+      { id: "type", title: "Transaction Type" },
+      { id: "contractAddress", title: "Asset Contract Address" },
+      { id: "symbol", title: "Asset Symbol / Name" },
+      { id: "tokenId", title: "Token ID" },
+      { id: "value", title: "Value / Amount" },
+      { id: "gasFee", title: "Gas Fee (ETH)" },
     ],
   })
 
