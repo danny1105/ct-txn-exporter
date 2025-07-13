@@ -2,7 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
 import dotenv from "dotenv"
-import { EtherscanTx } from './types'
+import { EtherscanTx, TxnRecord } from './types'
+import { CSV_HEADERS } from "./constants"
+import { createObjectCsvWriter } from 'csv-writer'
 
 dotenv.config()
 
@@ -77,7 +79,7 @@ export async function fetchEtherscanData(action: string, walletAddress: string) 
     if (result.length === 0) {
       keepFetching = false
     } else {
-      allResults.push(...result);
+      allResults.push(...result)
 
       // Prevent infinite loop by checking last block number
       const lastBlock = parseInt(result[result.length - 1].blockNumber, 10)
@@ -90,4 +92,17 @@ export async function fetchEtherscanData(action: string, walletAddress: string) 
   }
 
   return allResults
+}
+
+export async function exportToCSV(walletAddress: string, allTxs: TxnRecord[]) {
+  const filePath = getCsvFilePath(walletAddress)
+
+  const csvWriter = createObjectCsvWriter({
+    path: filePath,
+    header: CSV_HEADERS,
+  })
+
+  await csvWriter.writeRecords(allTxs)
+
+  console.log("CSV export completed!")
 }

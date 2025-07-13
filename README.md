@@ -91,6 +91,7 @@ src/
 ├── generate-txn-csv.ts    # Main export logic
 ├── utils.ts               # Utility functions (formatting, API calls)
 └── types.ts               # Shared types and interfaces
+└── constants.ts           # Shared constants (e.g., CSV headers)
 
 csv/
 └── YYYY-MM-DD/
