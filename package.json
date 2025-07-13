@@ -18,8 +18,14 @@
   },
   "homepage": "https://github.com/danny1105/ct-txn-exporter#readme",
   "devDependencies": {
+    "@eslint/js": "^9.31.0",
     "@types/node": "^24.0.13",
+    "@typescript-eslint/eslint-plugin": "^8.36.0",
+    "@typescript-eslint/parser": "^8.36.0",
+    "eslint": "^9.31.0",
+    "globals": "^16.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.36.0"
   }
 }
