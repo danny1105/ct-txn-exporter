@@ -87,6 +87,9 @@ Each row includes:
 
 ```
 src/
+├── __tests__/             
+│   ├── generate-txn-csv.test.ts     # Unit tests for generateTxnCSV logic
+│   ├── utils.test.ts                # Unit tests for utility functions
 ├── index.ts               # Entry point CLI script
 ├── generate-txn-csv.ts    # Main export logic
 ├── utils.ts               # Utility functions (formatting, API calls)
@@ -105,5 +108,7 @@ csv/
 * [TypeScript](https://www.typescriptlang.org/)
 * [Etherscan API](https://docs.etherscan.io/)
 * [csv-writer](https://www.npmjs.com/package/csv-writer)
+* [Jest](https://jestjs.io/) – Testing framework for unit tests
+* [ESLint](https://eslint.org/) – Linter for consistent code style and error checking
 
 ---
