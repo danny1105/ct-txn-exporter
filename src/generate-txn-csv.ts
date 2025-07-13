@@ -1,23 +1,74 @@
-import axios from 'axios' 
-import { createObjectCsvWriter } from 'csv-writer' 
-import dotenv from 'dotenv' 
-import { getCsvFilePath } from './utils'
+import { createObjectCsvWriter } from "csv-writer"
+import dotenv from "dotenv"
+import {
+  getCsvFilePath,
+  weiToEth,
+  timestampToDate,
+  gasFeeEth,
+  fetchEtherscanData,
+} from "./utils"
+import { TxnRecord } from "./types"
 
-dotenv.config() 
+dotenv.config()
 
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY 
+const allTxs: TxnRecord[] = []
 
-async function fetchTransactions(address: string) {
-  const url = `https://api.etherscan.io/api?module=account&action=txlist&address=${address}&sort=asc&apikey=${ETHERSCAN_API_KEY}` 
-  const response = await axios.get(url) 
-  return response.data.result 
+async function fetchTransactions(walletAddress: string) {
+  const ethTxs = await fetchEtherscanData("txlist", walletAddress)
+  const erc20Txs = await fetchEtherscanData("tokentx", walletAddress)
+  const nftTxs = await fetchEtherscanData("tokennfttx", walletAddress)
+
+  for (const tx of ethTxs) {
+    allTxs.push({
+      hash: tx.hash,
+      timestamp: timestampToDate(tx.timeStamp),
+      from: tx.from,
+      to: tx.to,
+      type: tx.input !== '0x' ? 'Contract Interaction' : 'ETH Transfer',
+      contractAddress: '',
+      symbol: 'ETH',
+      tokenId: '',
+      value: weiToEth(tx.value),
+      gasFee: gasFeeEth(tx.gasUsed, tx.gasPrice),
+    })
+  }
+
+  for (const tx of erc20Txs) {
+    allTxs.push({
+      hash: tx.hash,
+      timestamp: timestampToDate(tx.timeStamp),
+      from: tx.from,
+      to: tx.to,
+      type: 'ERC-20 Transfer',
+      contractAddress: tx.contractAddress,
+      symbol: tx.tokenSymbol,
+      tokenId: '',
+      value: weiToEth(tx.value, parseInt(tx.tokenDecimal)),
+      gasFee: '',
+    })
+  }
+
+  for (const tx of nftTxs) {
+    allTxs.push({
+      hash: tx.hash,
+      timestamp: timestampToDate(tx.timeStamp),
+      from: tx.from,
+      to: tx.to,
+      type: 'ERC-721/1155 Transfer',
+      contractAddress: tx.contractAddress,
+      symbol: tx.tokenName,
+      tokenId: tx.tokenID,
+      value: '1',
+      gasFee: '',
+    })
+  }
 }
 
-async function exportToCSV(transactions: any[], walletAddress: string) {
+async function exportToCSV(walletAddress: string) {
   const filePath = getCsvFilePath(walletAddress)
 
   const csvWriter = createObjectCsvWriter({
-    path: filePath,
+    path: 'transactions.csv',
     header: [
       { id: 'hash', title: 'Transaction Hash' },
       { id: 'timestamp', title: 'Date & Time' },
@@ -30,22 +81,14 @@ async function exportToCSV(transactions: any[], walletAddress: string) {
       { id: 'value', title: 'Value / Amount' },
       { id: 'gasFee', title: 'Gas Fee (ETH)' },
     ],
-  }) 
+  })
 
-  await csvWriter.writeRecords(
-    transactions.map(tx => ({
-      hash: tx.hash,
-      from: tx.from,
-      to: tx.to,
-      value: (Number(tx.value) / 1e18).toFixed(5),
-      timeStamp: new Date(Number(tx.timeStamp) * 1000).toISOString(),
-    }))
-  )
+  await csvWriter.writeRecords(allTxs)
 
-  console.log("CSV export completed!") 
+  console.log("CSV export completed!")
 }
 
 export async function generateTxnCSV(walletAddress: string): Promise<void> {
-  const transactions = await fetchTransactions(walletAddress)
-  await exportToCSV(transactions, walletAddress)
+  await fetchTransactions(walletAddress)
+  await exportToCSV(walletAddress)
 }
