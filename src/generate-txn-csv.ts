@@ -5,15 +5,36 @@ import {
   fetchEtherscanData,
   exportToCSV,
 } from "./utils"
-import { TxnRecord } from "./types"
+import { TxnRecord, EtherscanAction } from "./types"
 
 const allTxs: TxnRecord[] = []
 
 async function fetchTransactions(walletAddress: string) {
-  const ethTxs = await fetchEtherscanData("txlist", walletAddress)
-  const erc20Txs = await fetchEtherscanData("tokentx", walletAddress)
-  const nftTxs = await fetchEtherscanData("tokennfttx", walletAddress)
-  const internalTxs = await fetchEtherscanData("txlistinternal", walletAddress)
+  // Fetch normal external transactions (ETH transfers & contract interactions)
+  const ethTxs = await fetchEtherscanData(
+    EtherscanAction.TxList,
+    walletAddress
+  )
+
+  // Fetch ERC-20 token transfer history (e.g., USDC, DAI, etc.)
+  const erc20Txs = await fetchEtherscanData(
+    EtherscanAction.TokenTx,
+    walletAddress
+  )
+
+  // Fetch NFT transfer history (ERC-721 and ERC-1155 tokens)
+  const nftTxs = await fetchEtherscanData(
+    EtherscanAction.TokenNftTx,
+    walletAddress
+  )
+
+  // Fetch internal transactions (value transfers triggered inside smart contracts)
+  const internalTxs = await fetchEtherscanData(
+    EtherscanAction.TxListInternal,
+    walletAddress
+  )
+
+  // Convert each ETH transaction into a standardized CSV row format.
 
   for (const tx of ethTxs) {
     allTxs.push({

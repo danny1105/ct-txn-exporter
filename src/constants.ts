@@ -1,3 +1,7 @@
+import dotenv from "dotenv"
+
+dotenv.config()
+
 export const CSV_HEADERS = [
   { id: "hash", title: "Transaction Hash" },
   { id: "timestamp", title: "Date & Time" },
@@ -10,3 +14,6 @@ export const CSV_HEADERS = [
   { id: "value", title: "Value / Amount" },
   { id: "gasFee", title: "Gas Fee (ETH)" },
 ]
+
+export const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
+export const BASE_URL = 'https://api.etherscan.io/api'

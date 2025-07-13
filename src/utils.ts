@@ -1,15 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import axios from 'axios'
-import dotenv from "dotenv"
-import { EtherscanTx, TxnRecord } from './types'
-import { CSV_HEADERS } from "./constants"
+
+import { EtherscanTx, TxnRecord, EtherscanAction } from './types'
+import { CSV_HEADERS, ETHERSCAN_API_KEY, BASE_URL } from "./constants"
 import { createObjectCsvWriter } from 'csv-writer'
 
-dotenv.config()
-
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
-const BASE_URL = 'https://api.etherscan.io/api'
 
 export function getCsvFilePath(walletAddress: string): string {
   const datePart = new Date().toISOString().slice(0, 10) // "YYYY-MM-DD"
@@ -57,7 +53,7 @@ export function gasFeeEth(gasUsed: string, gasPrice: string) {
   }
 }
 
-export async function fetchEtherscanData(action: string, walletAddress: string) {
+export async function fetchEtherscanData(action: EtherscanAction, walletAddress: string) {
   const allResults: EtherscanTx[] = []
   let startBlock = 0
   let keepFetching = true

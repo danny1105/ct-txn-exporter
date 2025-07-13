@@ -27,3 +27,11 @@ export type EtherscanTx = {
   input?: string
   [key: string]: unknown // optional, for unknown fields
 }
+
+export enum EtherscanAction {
+  TxList = 'txlist',
+  TokenTx = 'tokentx',
+  TokenNftTx = 'tokennfttx',
+  TxListInternal = 'txlistinternal',
+}
+
