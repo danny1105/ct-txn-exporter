@@ -17,7 +17,11 @@ export function getCsvFilePath(walletAddress: string): string {
 }
 
 export function weiToEth(wei: string, decimals = 18) {
-  return (Number(wei) / Math.pow(10, decimals)).toFixed(6) 
+  if (!wei || isNaN(Number(wei))) {
+    return ''
+  }
+
+  return (Number(wei) / Math.pow(10, decimals)).toFixed(6)
 }
 
 export function timestampToDate(ts: string) {
@@ -27,7 +31,24 @@ export function timestampToDate(ts: string) {
 }
 
 export function gasFeeEth(gasUsed: string, gasPrice: string) {
-  return weiToEth((BigInt(gasUsed) * BigInt(gasPrice)).toString()) 
+  if (!gasUsed || !gasPrice) {
+    return ''
+  }
+
+  try {
+    const fee = BigInt(gasUsed) * BigInt(gasPrice)
+    
+    return weiToEth(fee.toString())
+  } catch (err) {
+    console.warn({
+      message: 'Invalid gasUsed or gasPrice:', 
+      gasUsed, 
+      gasPrice, 
+      error: err
+    })
+
+    return ''
+  }
 }
 
 export async function fetchEtherscanData(action: string, walletAddress: string) {
@@ -39,6 +60,6 @@ export async function fetchEtherscanData(action: string, walletAddress: string) 
       sort: 'asc',
       apikey: ETHERSCAN_API_KEY,
     },
-  }) 
-  return response.data.result 
+  })
+  return response.data.result
 }
